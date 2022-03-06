@@ -1,7 +1,14 @@
 package main
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestAdvancedTextConversion(t *testing.T) {
-	AdvancedTextConversion()
+	EasyTextConversion()
+	fmt.Println()
+	CharacterCodeAndConversionBetweenHalfWidthAndFullWidth()
+	fmt.Println()
+	UnicodeAndConversionPerCodePoint()
 }
