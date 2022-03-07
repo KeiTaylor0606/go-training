@@ -15,7 +15,9 @@ import (
 
 	"github.com/rivo/uniseg"
 	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"golang.org/x/text/width"
 )
 
@@ -149,9 +151,6 @@ func CharacterCodeAndConversionBetweenHalfWidthAndFullWidth() {
 		fmt.Printf("%c: %s\n", r, p.Kind())
 	}
 
-	/*
-		Unicodeの正規化
-	*/
 }
 
 func UnicodeAndConversionPerCodePoint() {
@@ -181,6 +180,54 @@ func UnicodeAndConversionPerCodePoint() {
 	for gr.Next() {
 		fmt.Printf("%s %x \n", gr.Str(), gr.Runes())
 	}
+
+	/*
+		Unicodeの正規化
+	*/
+	//norm.NFC定数とnorm.NFD定数の使用例
+	s := "é"
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	s = norm.NFD.String(s) //正準等価性に基づいて分解
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	s = norm.NFC.String(s) //正準等価性に基づいて合成
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	//norm.NFKC定数とnorm.NFKD定数の使用例
+	s = "ゴ"
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	s = norm.NFKC.String(s) //互換等価性に基づいて分解
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	s = norm.NFKD.String(s) //互換等価性に基づいて合成
+	fmt.Printf("%[1]q %+[1]q\n", s)
+
+	/*
+		コードポイントごとの変換
+	*/
+	//文字列中のカタカナを全て全角に変換
+	t := runes.If(runes.In(unicode.Katakana), width.Widen, nil)
+	fmt.Println(t.String("５ァアAα"))
+
+	//アクサンデキュなどの削除
+	removeMn := runes.Remove(runes.In(unicode.Mn))
+	tt := transform.Chain(norm.NFD, removeMn, norm.NFC)
+	ss, _, err := transform.String(tt, "résumé")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(ss)
+
+	//アルファベットを大文字に変換
+	ttt := runes.Map(func(r rune) rune {
+		if 'a' <= r && r <= 'z' {
+			return r - 'a' + 'A'
+		}
+		return r
+	})
+	fmt.Println(ttt.String("Hello, World"))
 }
 
 /*
