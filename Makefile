@@ -1,0 +1,2 @@
+readme:
+	git add README.*
